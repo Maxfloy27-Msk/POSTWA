@@ -25,6 +25,32 @@ pip install -r requirements.txt
 python bot.py
 ```
 
+## Где запускать
+
+Бот должен крутиться 24/7 на машине с доступом в интернет (api.telegram.org).
+Подойдёт любой из вариантов:
+
+- ваш ПК / ноутбук: `python bot.py` (работает пока открыт терминал);
+- VPS (Timeweb, Beget, Hetzner и т.п.) — `systemd`-юнит запускает `python bot.py`;
+- Railway / Render / Fly.io — задеплоить как worker, в Variables прописать `BOT_TOKEN`, `SMM_WINNI2_URL`, `AUTO_POST_WA_URL`.
+
+Пример `systemd`-юнита (`/etc/systemd/system/postwa.service`):
+
+```ini
+[Unit]
+Description=POSTWA Telegram bot
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/postwa
+EnvironmentFile=/opt/postwa/.env
+ExecStart=/opt/postwa/.venv/bin/python bot.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ## Контракты вебхуков
 
 ### SMM WINNI2 (входящий запрос)
