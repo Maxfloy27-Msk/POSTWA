@@ -1,4 +1,4 @@
-# POSTWA — Telegram-бот для генерации постов
+# POSTWA — Telegram-бот [@AutoWA27_bot](https://t.me/AutoWA27_bot)
 
 Бот реализует поток из схемы:
 
@@ -13,7 +13,7 @@
 
 ## Запуск
 
-1. Создайте бота у [@BotFather](https://t.me/BotFather) и получите `BOT_TOKEN`.
+1. Бот: [@AutoWA27_bot](https://t.me/AutoWA27_bot). Токен выдаётся у [@BotFather](https://t.me/BotFather) (`/token`).
 2. Скопируйте `.env.example` в `.env` и заполните переменные:
    - `BOT_TOKEN` — токен Telegram-бота
    - `SMM_WINNI2_URL` — URL вебхука, который принимает `{user_id, text}` и возвращает список постов

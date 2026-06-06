@@ -31,7 +31,8 @@ dp = Dispatcher(storage=MemoryStorage())
 async def cmd_start(message: Message, state: FSMContext) -> None:
     await state.set_state(PostFlow.waiting_for_text)
     await message.answer(
-        "Привет! Что вы хотите написать сегодня?\n\n"
+        "Привет! Это @AutoWA27_bot.\n"
+        "Что вы хотите написать сегодня?\n\n"
         "Пришлите тему или черновик текста — я подготовлю готовые посты."
     )
 
