@@ -1,78 +1,159 @@
 # POSTWA — Telegram-бот [@AutoWA27_bot](https://t.me/AutoWA27_bot)
 
-Бот реализует поток из схемы:
+## Что делает бот
 
 ```
-/start → "Что вы хотите написать сегодня?" → текст пользователя
-       → SMM WINNI2 (генерация постов)
-       → готовые посты ⇒ параллельно:
-            • отправить пользователю в чат
-            • отправить в Auto_post_WA
-       → Завершено
+/start
+  → "что вы хотите написать сегодня?"
+  → пользователь присылает текст
+  → бот создаёт задачу в Manus / SMM WINNI2 (project RQy56XCErXS2CvWbTTPy8W)
+  → ожидает готовых постов (polling task.listMessages)
+  → параллельно:
+       • отправляет посты пользователю в Telegram
+       • создаёт задачу в Manus / Auto_post_WA (project T8DVneZso4SFxzoBrUZpVU)
+  → "Публикация выполнена."
 ```
 
-## Запуск
+## Структура файлов
 
-1. Бот: [@AutoWA27_bot](https://t.me/AutoWA27_bot). Токен выдаётся у [@BotFather](https://t.me/BotFather) (`/token`).
-2. Скопируйте `.env.example` в `.env` и заполните переменные:
-   - `BOT_TOKEN` — токен Telegram-бота
-   - `SMM_WINNI2_URL` — URL вебхука, который принимает `{user_id, text}` и возвращает список постов
-   - `AUTO_POST_WA_URL` — URL вебхука Auto_post_WA, принимает `{user_id, posts}`
-3. Установите зависимости и запустите:
+| Файл | Назначение |
+|------|-----------|
+| `bot.py` | Telegram-хендлеры, FSM, точка входа |
+| `manus.py` | Manus API: создание задач, polling |
+| `config.py` | Переменные окружения |
+| `.env` | Секреты (не коммитить!) |
 
+---
+
+## Запуск на ПК (пошаговая инструкция)
+
+### Шаг 1 — Установить Python
+
+**Windows:**
+1. Открыть https://www.python.org/downloads/ → скачать версию 3.11 или 3.12
+2. При установке обязательно поставить галочку **"Add Python to PATH"**
+3. Проверить в командной строке (`Win+R → cmd`):
+   ```
+   python --version
+   ```
+
+**Mac/Linux:**
 ```bash
-pip install -r requirements.txt
+python3 --version   # должно быть 3.10+
+```
+
+---
+
+### Шаг 2 — Скачать код
+
+**Вариант A — через Git:**
+```bash
+git clone https://github.com/Maxfloy27-Msk/POSTWA.git
+cd POSTWA
+git checkout claude/elegant-dirac-WgUmy
+```
+
+**Вариант B — скачать ZIP:**
+На странице репозитория GitHub → Code → Download ZIP → распаковать.
+
+---
+
+### Шаг 3 — Создать файл `.env`
+
+В папке проекта создать файл `.env` (скопировать `.env.example` и заполнить):
+
+```
+BOT_TOKEN=8804865639:AAHfnuX2B4h2TmSFs4290BiVJg8ACO3K0_A
+MANUS_API_KEY=ваш_ключ_manus
+POLL_INTERVAL=15
+TASK_TIMEOUT=600
+```
+
+> ⚠️ Файл `.env` внесён в `.gitignore` — в GitHub он никогда не попадёт.
+
+---
+
+### Шаг 4 — Установить зависимости
+
+**Windows (cmd или PowerShell):**
+```cmd
+cd C:\путь\к\папке\POSTWA
+python -m pip install -r requirements.txt
+```
+
+**Mac/Linux:**
+```bash
+cd ~/POSTWA
+pip3 install -r requirements.txt
+```
+
+---
+
+### Шаг 5 — Запустить бота
+
+**Windows:**
+```cmd
 python bot.py
 ```
 
-## Где запускать
-
-Бот должен крутиться 24/7 на машине с доступом в интернет (api.telegram.org).
-Подойдёт любой из вариантов:
-
-- ваш ПК / ноутбук: `python bot.py` (работает пока открыт терминал);
-- VPS (Timeweb, Beget, Hetzner и т.п.) — `systemd`-юнит запускает `python bot.py`;
-- Railway / Render / Fly.io — задеплоить как worker, в Variables прописать `BOT_TOKEN`, `SMM_WINNI2_URL`, `AUTO_POST_WA_URL`.
-
-Пример `systemd`-юнита (`/etc/systemd/system/postwa.service`):
-
-```ini
-[Unit]
-Description=POSTWA Telegram bot
-After=network.target
-
-[Service]
-WorkingDirectory=/opt/postwa
-EnvironmentFile=/opt/postwa/.env
-ExecStart=/opt/postwa/.venv/bin/python bot.py
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+**Mac/Linux:**
+```bash
+python3 bot.py
 ```
 
-## Контракты вебхуков
+Вы увидите в консоли:
+```
+2026-06-06 12:00:00 [INFO] __main__: Bot @AutoWA27_bot starting
+```
 
-### SMM WINNI2 (входящий запрос)
+Бот работает, пока открыт терминал. Чтобы остановить — `Ctrl+C`.
+
+---
+
+### Шаг 6 — Проверить
+
+Откройте Telegram → найдите **@AutoWA27_bot** → `/start`.
+
+---
+
+## Manus API — используемые эндпоинты
+
+| Эндпоинт | Метод | Назначение |
+|----------|-------|-----------|
+| `task.create` | POST | Создать задачу в проекте |
+| `task.listMessages` | POST | Получить сообщения задачи (polling) |
+
+### Формат `task.create`
 ```json
-POST /smm-winni2
-{ "user_id": 123456, "text": "Тема поста от пользователя" }
+POST https://api.manus.ai/v2/task.create
+Authorization: Bearer <MANUS_API_KEY>
+
+{
+  "project_id": "RQy56XCErXS2CvWbTTPy8W",
+  "message": "сделай посты по этому тексту: ..."
+}
 ```
 
-Ответ принимается в любом из форматов:
-- `["пост 1", "пост 2"]`
-- `{"posts": ["пост 1", "пост 2"]}`
-- `{"result": "один пост"}`
-- `"один пост"`
-
-### Auto_post_WA (исходящий запрос)
+Ожидаемый ответ:
 ```json
-POST /auto-post-wa
-{ "user_id": 123456, "posts": ["пост 1", "пост 2"] }
+{ "id": "task_xxx", ... }
 ```
 
-## Структура
+### Формат `task.listMessages`
+```json
+POST https://api.manus.ai/v2/task.listMessages
 
-- `bot.py` — обработчики Telegram, FSM, точка входа
-- `services.py` — интеграции с SMM WINNI2 и Auto_post_WA, параллельная доставка
-- `config.py` — загрузка переменных окружения
+{ "task_id": "task_xxx" }
+```
+
+Ожидаемый ответ:
+```json
+{
+  "messages": [
+    { "role": "user",      "content": "..." },
+    { "role": "assistant", "content": "..." }
+  ]
+}
+```
+
+Задача считается завершённой, когда количество сообщений не меняется 2 цикла подряд (2 × 15 с = 30 с) и есть хотя бы одно сообщение от assistant.
