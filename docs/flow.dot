@@ -1,0 +1,64 @@
+digraph POSTWA {
+    rankdir=LR;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=10, color="#555555"];
+
+    // Terminals
+    start  [shape=ellipse, style="filled", fillcolor="#A8E6A1", label="Старт"];
+    end    [shape=ellipse, style="filled", fillcolor="#A8E6A1", label="Публикация\nвыполнена"];
+
+    // User actions
+    cmd    [shape=parallelogram, style="filled", fillcolor="#FFE7A0",
+            label="Пользователь:\n/start"];
+    text   [shape=parallelogram, style="filled", fillcolor="#FFE7A0",
+            label="Пользователь:\nТЕКСТ поста"];
+
+    // Bot logic
+    ask    [shape=box, style="rounded,filled", fillcolor="#FFF4B5",
+            label="@AutoWA27_bot:\n«что вы хотите\nнаписать сегодня?»"];
+
+    create_smm [shape=box, style="rounded,filled", fillcolor="#CDE7FF",
+            label="POST task.create\nproject_id = SMM WINNI2\n(RQy56XCErXS2CvWbTTPy8W)\nmessage = «сделай посты\nпо этому тексту: ТЕКСТ»"];
+
+    poll   [shape=diamond, style="filled", fillcolor="#FFD8B5",
+            label="Polling\ntask.listMessages\nкаждые 15 с"];
+
+    ready  [shape=parallelogram, style="filled", fillcolor="#FFE7A0",
+            label="Готовые посты\nот SMM WINNI2"];
+
+    // Parallel branch
+    fork   [shape=box, style="filled", fillcolor="#333333", fontcolor="white",
+            width=2, height=0.15, label="параллельно"];
+
+    send_tg [shape=box, style="rounded,filled", fillcolor="#CDE7FF",
+            label="Отправить посты\nв чат @AutoWA27_bot\n(пользователю)"];
+
+    send_wa [shape=box, style="rounded,filled", fillcolor="#CDE7FF",
+            label="POST task.create\nproject_id = Auto_post_WA\n(T8DVneZso4SFxzoBrUZpVU)\nmessage = посты"];
+
+    join   [shape=box, style="filled", fillcolor="#333333", fontcolor="white",
+            width=2, height=0.15, label="дождаться обеих веток"];
+
+    final  [shape=box, style="rounded,filled", fillcolor="#FFF4B5",
+            label="@AutoWA27_bot:\n«Публикация\nвыполнена.»"];
+
+    // Edges
+    start -> cmd;
+    cmd -> ask [label="запуск бота"];
+    ask -> text [label="ответ\nпользователя"];
+    text -> create_smm [label="передать\nтекст"];
+    create_smm -> poll [label="task_id"];
+    poll -> poll [label="ещё генерирует"];
+    poll -> ready [label="ответ\nстабилен"];
+    ready -> fork;
+
+    fork -> send_tg;
+    fork -> send_wa;
+
+    send_tg -> join [label="отправлено"];
+    send_wa -> join [label="отправлено"];
+
+    join -> final;
+    final -> end;
+}

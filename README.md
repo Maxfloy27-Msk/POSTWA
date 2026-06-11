@@ -1,5 +1,12 @@
 # POSTWA — Telegram-бот [@AutoWA27_bot](https://t.me/AutoWA27_bot)
 
+## Блок-схема
+
+![flow](docs/flow.png)
+
+Исходник: [`docs/flow.dot`](docs/flow.dot) (Graphviz). Пересобрать PNG:
+`dot -Tpng docs/flow.dot -o docs/flow.png`
+
 ## Что делает бот
 
 ```
