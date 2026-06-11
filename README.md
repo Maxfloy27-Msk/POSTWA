@@ -7,6 +7,15 @@
 Исходник: [`docs/flow.dot`](docs/flow.dot) (Graphviz). Пересобрать PNG:
 `dot -Tpng docs/flow.dot -o docs/flow.png`
 
+## Карта задач
+
+![task map](docs/task_map.png)
+
+Шесть доменов ответственности: Telegram-интерфейс, управление диалогом (FSM),
+интеграция SMM WINNI2, интеграция Auto_post_WA, конфигурация/запуск, обработка
+ошибок. Пунктиром показана привязка к файлам проекта.
+Исходник: [`docs/task_map.dot`](docs/task_map.dot).
+
 ## Что делает бот
 
 ```

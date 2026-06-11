@@ -1,0 +1,101 @@
+digraph TaskMap {
+    rankdir=LR;
+    bgcolor="white";
+    splines=ortho;
+    node [fontname="Arial", fontsize=11, shape=box, style="rounded,filled"];
+    edge [fontname="Arial", fontsize=9, color="#666666", arrowsize=0.7];
+
+    // Root
+    root [label="@AutoWA27_bot\nPOSTWA", fillcolor="#2E7D32", fontcolor="white",
+           fontsize=14, shape=box, style="rounded,filled,bold"];
+
+    // Top-level domains
+    domain_tg   [label="1. Telegram-интерфейс", fillcolor="#1976D2", fontcolor="white"];
+    domain_flow [label="2. Управление\nдиалогом (FSM)",  fillcolor="#1976D2", fontcolor="white"];
+    domain_smm  [label="3. Интеграция\nSMM WINNI2",      fillcolor="#1976D2", fontcolor="white"];
+    domain_wa   [label="4. Интеграция\nAuto_post_WA",    fillcolor="#1976D2", fontcolor="white"];
+    domain_cfg  [label="5. Конфигурация\nи запуск",      fillcolor="#1976D2", fontcolor="white"];
+    domain_err  [label="6. Ошибки\nи устойчивость",      fillcolor="#1976D2", fontcolor="white"];
+
+    root -> domain_tg;
+    root -> domain_flow;
+    root -> domain_smm;
+    root -> domain_wa;
+    root -> domain_cfg;
+    root -> domain_err;
+
+    // 1. Telegram
+    t1_1 [label="Принять /start", fillcolor="#BBDEFB"];
+    t1_2 [label="Отправить приветствие\n«что вы хотите\nнаписать сегодня?»", fillcolor="#BBDEFB"];
+    t1_3 [label="Принять текст\nот пользователя", fillcolor="#BBDEFB"];
+    t1_4 [label="Отправлять посты\nкусками ≤ 4096 симв.", fillcolor="#BBDEFB"];
+    t1_5 [label="Отправить финал:\n«Публикация выполнена.»", fillcolor="#BBDEFB"];
+    domain_tg -> t1_1; domain_tg -> t1_2; domain_tg -> t1_3;
+    domain_tg -> t1_4; domain_tg -> t1_5;
+
+    // 2. FSM
+    t2_1 [label="State: waiting_for_text", fillcolor="#BBDEFB"];
+    t2_2 [label="State: generating", fillcolor="#BBDEFB"];
+    t2_3 [label="Блокировка повторных\nзапросов во время работы", fillcolor="#BBDEFB"];
+    t2_4 [label="Сброс состояния\nпо завершении", fillcolor="#BBDEFB"];
+    domain_flow -> t2_1; domain_flow -> t2_2;
+    domain_flow -> t2_3; domain_flow -> t2_4;
+
+    // 3. SMM WINNI2
+    t3_1 [label="task.create\nproject = RQy56XCErXS2CvWbTTPy8W", fillcolor="#BBDEFB"];
+    t3_2 [label="Сформировать промпт:\n«сделай посты по\nэтому тексту: …»", fillcolor="#BBDEFB"];
+    t3_3 [label="Polling task.listMessages\nкаждые 15 с", fillcolor="#BBDEFB"];
+    t3_4 [label="Определить готовность\n(стабильный ответ\n2 цикла подряд)", fillcolor="#BBDEFB"];
+    t3_5 [label="Извлечь текст\nиз assistant-сообщений", fillcolor="#BBDEFB"];
+    domain_smm -> t3_1; domain_smm -> t3_2; domain_smm -> t3_3;
+    domain_smm -> t3_4; domain_smm -> t3_5;
+
+    // 4. Auto_post_WA
+    t4_1 [label="task.create\nproject = T8DVneZso4SFxzoBrUZpVU", fillcolor="#BBDEFB"];
+    t4_2 [label="Передать готовые\nпосты в проект", fillcolor="#BBDEFB"];
+    t4_3 [label="Запуск параллельно\nс отправкой в Telegram\n(asyncio.gather)", fillcolor="#BBDEFB"];
+    domain_wa -> t4_1; domain_wa -> t4_2; domain_wa -> t4_3;
+
+    // 5. Config
+    t5_1 [label="Загрузка .env\n(python-dotenv)", fillcolor="#BBDEFB"];
+    t5_2 [label="BOT_TOKEN", fillcolor="#BBDEFB"];
+    t5_3 [label="MANUS_API_KEY", fillcolor="#BBDEFB"];
+    t5_4 [label="POLL_INTERVAL,\nTASK_TIMEOUT", fillcolor="#BBDEFB"];
+    t5_5 [label="Запуск polling\naiogram.start_polling()", fillcolor="#BBDEFB"];
+    domain_cfg -> t5_1; domain_cfg -> t5_2; domain_cfg -> t5_3;
+    domain_cfg -> t5_4; domain_cfg -> t5_5;
+
+    // 6. Errors
+    t6_1 [label="Ошибка task.create\n→ сообщить пользователю", fillcolor="#BBDEFB"];
+    t6_2 [label="Таймаут генерации\n(>600 с) → сообщить", fillcolor="#BBDEFB"];
+    t6_3 [label="Сетевая ошибка poll\n→ retry на следующем цикле", fillcolor="#BBDEFB"];
+    t6_4 [label="Ошибка Auto_post_WA\n→ предупредить, но\nдоставку в TG продолжить", fillcolor="#BBDEFB"];
+    t6_5 [label="Логирование\nвсех исключений", fillcolor="#BBDEFB"];
+    domain_err -> t6_1; domain_err -> t6_2; domain_err -> t6_3;
+    domain_err -> t6_4; domain_err -> t6_5;
+
+    // Mapping to files (right side legend)
+    subgraph cluster_files {
+        label="Файлы проекта";
+        labelloc=b;
+        fontsize=12;
+        style="dashed";
+        color="#888888";
+
+        f_bot   [label="bot.py", fillcolor="#FFE082", shape=note];
+        f_manus [label="manus.py", fillcolor="#FFE082", shape=note];
+        f_cfg   [label="config.py", fillcolor="#FFE082", shape=note];
+        f_env   [label=".env", fillcolor="#FFE082", shape=note];
+        f_req   [label="requirements.txt", fillcolor="#FFE082", shape=note];
+    }
+
+    domain_tg   -> f_bot   [style=dotted, arrowhead=none];
+    domain_flow -> f_bot   [style=dotted, arrowhead=none];
+    domain_smm  -> f_manus [style=dotted, arrowhead=none];
+    domain_wa   -> f_manus [style=dotted, arrowhead=none];
+    domain_cfg  -> f_cfg   [style=dotted, arrowhead=none];
+    domain_cfg  -> f_env   [style=dotted, arrowhead=none];
+    domain_cfg  -> f_req   [style=dotted, arrowhead=none];
+    domain_err  -> f_bot   [style=dotted, arrowhead=none];
+    domain_err  -> f_manus [style=dotted, arrowhead=none];
+}
