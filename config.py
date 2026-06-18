@@ -5,6 +5,8 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 MANUS_API_KEY = os.getenv("MANUS_API_KEY", "")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 MANUS_BASE_URL = "https://api.manus.ai/v2"
 
 SMM_PROJECT_ID = "RQy56XCErXS2CvWbTTPy8W"
